@@ -147,27 +147,34 @@ module.exports = (robot) ->
       .get() (err, res, body) ->
         try
            #try short answer api
-           msg.send "#{body}"
-           match = /No short answer available/i.test("#{body}")
+           
+           match = /No short answer available/i.test("#{body}") || /{}/i.test("#{body}") || /No/i.test("#{body}")
+
+           if !match
+                msg.send "#{body} \n"
+
            if match
-                #msg.send "Missing units? Will try to get a detailed answer ..."
-                msg.http("#{query2}").headers(Accept: 'application/json').get() (err, res, body) ->       
+                msg.send "No simple answer; looking for a nice summary...\n"
+                msg.http("#{query2}").headers(Accept: 'application/json').get() (err1, res1, body1) ->       
                     data = ''
-                    res.on 'data', (chunk) ->
+                    res1.on 'data', (chunk) ->
                         data += chunk.toString()
                         #msg.send "#$%#$ #{data}"
                         #msg.send "--------I am in data---------"
                         
-                    res.on 'end', () ->
-                        msg.send "#$%#$ #{data}"
+                    res1.on 'end', () ->
+                        #msg.send "#$%#$ #{data}"
                         msg.send "--------I am in data---------"
                         return
                     try
                         #try detailed v2 api
-                        #json = JSON.parse(body1)
-                        msg.send "#{body} #{data}"
+                        json = JSON.parse(body1)
+                        for i in [0..json.queryresult.numpods - 1]
+                            msg.send "\n__#{json.queryresult.pods[i].title}__"
+                            for j in [0..json.queryresult.pods[i].numsubpods - 1]
+                                msg.send "#{json.queryresult.pods[i].subpods[j].plaintext}"
                     catch error
-                        msg.send "#{error} (I got nothing)"
+                        msg.send "(I got nothing)"
         catch error
            msg.send "My brain isn't functioning"
 

@@ -147,10 +147,14 @@ module.exports = (robot) ->
       .get() (err, res, body) ->
         try
            #try short answer api
-           msg.send "#{body}"
-           match = /No short answer available/i.test("#{body}")
+           
+           match = /No short answer available/i.test("#{body}") || /{}/i.test("#{body}") || /No/i.test("#{body}")
+
+           if !match
+                msg.send "#{body} \n"
+
            if match
-                #msg.send "Missing units? Will try to get a detailed answer ..."
+                msg.send "No simple answer; looking for a nice summary...\n"
                 msg.http("#{query2}").headers(Accept: 'application/json').get() (err1, res1, body1) ->       
                     data = ''
                     res1.on 'data', (chunk) ->
@@ -165,14 +169,12 @@ module.exports = (robot) ->
                     try
                         #try detailed v2 api
                         json = JSON.parse(body1)
-                        i for i in [0..json.queryresult.numpods]
-                            try
-                                msg.send "<--- #{json.queryresult.pods[i].title} --->"
-                            j for j in [0..json.queryresult.pods[i].numsubpods]
-                                try
-                                    msg.send "#{json.queryresult.pods[i].subpods[j].plaintext}"
+                        for i in [0..json.queryresult.numpods - 1]
+                            msg.send "\n__#{json.queryresult.pods[i].title}__"
+                            for j in [0..json.queryresult.pods[i].numsubpods - 1]
+                                msg.send "#{json.queryresult.pods[i].subpods[j].plaintext}"
                     catch error
-                        msg.send "#{error} (I got nothing)"
+                        msg.send "(I got nothing)"
         catch error
            msg.send "My brain isn't functioning"
 
