@@ -155,12 +155,13 @@ module.exports = (robot) ->
                     data = ''
                     res.on 'data', (chunk) ->
                         data += chunk.toString()
-                        msg.send "+"
+                        msg.send "#$%#$ #{data}"
                     res.on 'end', () ->
                         msg.send "#$%#$ #{data}"
                     try
-                        json = JSON.parse(data)
-                        msg.send "#{data} #{json.queryresult.error}"
+                        #try detailed v2 api
+                        #json = JSON.parse(body1)
+                        msg.send "#{body} #{data}"
                     catch error
                         msg.send "#{error} (I got nothing)"
         catch error
