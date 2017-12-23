@@ -1,4 +1,4 @@
-# Description:
+﻿# Description:
 #   Example scripts for you to examine and try out.
 #
 # Notes:
@@ -8,10 +8,7 @@
 #
 #   These are from the scripting documentation: https://github.com/github/hubot/blob/master/docs/scripting.md
 
-module.exports = (robot) ->
 
-  # robot.hear /badger/i, (res) ->
-  #   res.send "Badgers? BADGERS? WE DON'T NEED NO STINKIN BADGERS"
   #
   # robot.respond /open the (.*) doors/i, (res) ->
   #   doorType = res.match[1]
@@ -20,8 +17,8 @@ module.exports = (robot) ->
   #   else
   #     res.reply "Opening #{doorType} doors"
   #
-  # robot.hear /I like pie/i, (res) ->
-  #   res.emote "makes a freshly baked pie"
+  #robot.hear /I like pie/i, (res) ->
+  #  res.emote "makes a freshly baked pie"
   #
   # lulz = ['lol', 'rofl', 'lmao']
   #
@@ -48,11 +45,8 @@ module.exports = (robot) ->
   #     return
   #   res.send "#{answer}, but what is the question?"
   #
-  # robot.respond /you are a little slow/, (res) ->
-  #   setTimeout () ->
-  #     res.send "Who you calling 'slow'?"
-  #   , 60 * 1000
-  #
+
+  
   # annoyIntervalId = null
   #
   # robot.respond /annoy me/, (res) ->
@@ -104,3 +98,71 @@ module.exports = (robot) ->
   # robot.respond /sleep it off/i, (res) ->
   #   robot.brain.set 'totalSodas', 0
   #   res.reply 'zzzzz'
+
+victory = [
+  "https://i.imgflip.com/1vic5.jpg",
+  "http://s2.quickmeme.com/img/9c/9c973c71365035fcae728a65b287acb8feb6b9cd07e41f6cb86c046c72c8db2c.jpg",
+  "https://i.imgflip.com/g3lqz.jpg",
+  "http://m.memegen.com/ziwjeu.jpg",
+  "http://i0.kym-cdn.com/photos/images/original/000/314/181/bf5.jpg",
+  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJrPFBugWK2FNPtk8qV6Tc44JZc9IF-WfIdE2QKtQXAokjX1lGVg",
+  "https://memegenerator.net/img/instances/36033650.jpg",
+  "https://memegenerator.net/img/instances/58462151.jpg",
+  "http://s.quickmeme.com/img/e1/e165f7fea3ea372cf1311282dab0addcb8d09d283a8aad76d38de13cf9ef07b5.jpg",
+  "https://www.askideas.com/media/47/I-Have-So-Much-Homework-Better-Watch-Some-Youtube-Funny-Meme-Image.jpg"
+]
+
+module.exports = (robot) ->
+
+  robot.hear /give up/i, (res) ->
+    res.send "(╯'□')╯ ┻━┻ I'm done."
+
+  robot.hear /success|Oh yeah|I did it|We did it|you did it|victory/i, (msg) ->
+    msg.send msg.random victory 
+
+  robot.respond /you(.*)slow/i, (msg) ->
+    setTimeout ->
+      msg.send 'Who you calling slow??'
+    , 5000
+  
+  robot.respond /(.*)joke(.*)|(.*)funny(.*)|(.*)laugh(.*)|(.*)lulz(.*)|(.*)lols(.*)/i, (msg) ->
+    msg.http("https://icanhazdadjoke.com/")
+      .headers(Accept: 'application/json')
+      .get() (err, res, body) ->
+        try
+           json = JSON.parse(body)
+           msg.send "#{json.joke}"
+        catch error
+           msg.send "Not now kid."
+
+# Wolfram Computational Engine
+# APP NAME: quick
+# APPID: PGAKAJ-U75WURKQ69
+  robot.respond /question (.*)/i, (msg) ->
+    gemname = escape(msg.match[1]).replace /%20/g, "+"
+    query1 = "http://api.wolframalpha.com/v1/result?i=#{gemname}%3F&appid=PGAKAJ-U75WURKQ69"
+    query2 = "http://api.wolframalpha.com/v2/query?input=#{gemname}&format=plaintext&output=JSON&appid=PGAKAJ-U75WURKQ69"
+    msg.http("#{query1}")
+      .headers(Accept: 'application/json')
+      .get() (err, res, body) ->
+        try
+           #try short answer api
+           msg.send "#{body}"
+           match = /No short answer available/i.test("#{body}")
+           if match
+                msg.send "Missing units? Will try to get a detailed answer ..."
+                msg.http("#{query2}").headers(Accept: 'application/json').get() (err, res, body) ->       
+                    data = ''
+                    res.on 'data', (chunk) ->
+                        data += chunk.toString()
+                        msg.send "+"
+                    res.on 'end', () ->
+                        msg.send "#$%#$ #{data}"
+                    try
+                        json = JSON.parse(data)
+                        msg.send "#{data} #{json.queryresult.error}"
+                    catch error
+                        msg.send "#{error} (I got nothing)"
+        catch error
+           msg.send "My brain isn't functioning"
+
