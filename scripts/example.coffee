@@ -165,7 +165,12 @@ module.exports = (robot) ->
                     try
                         #try detailed v2 api
                         json = JSON.parse(body1)
-                        msg.send "#{json.queryresult.pods[1].subpods[0].plaintext}"
+                        i for i in [0..json.queryresult.numpods]
+                            try
+                                msg.send "<--- #{json.queryresult.pods[i].title} --->"
+                            j for j in [0..json.queryresult.pods[i].numsubpods]
+                                try
+                                    msg.send "#{json.queryresult.pods[i].subpods[j].plaintext}"
                     catch error
                         msg.send "#{error} (I got nothing)"
         catch error
