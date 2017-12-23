@@ -150,18 +150,22 @@ module.exports = (robot) ->
            msg.send "#{body}"
            match = /No short answer available/i.test("#{body}")
            if match
-                msg.send "Missing units? Will try to get a detailed answer ..."
-                msg.http("#{query2}").headers(Accept: 'application/json').get() (err, res, body) ->       
+                #msg.send "Missing units? Will try to get a detailed answer ..."
+                msg.http("#{query2}").headers(Accept: 'application/json').get() (err1, res1, body1) ->       
                     data = ''
-                    res.on 'data', (chunk) ->
+                    res1.on 'data', (chunk) ->
                         data += chunk.toString()
-                        msg.send "#$%#$ #{data}"
-                    res.on 'end', () ->
-                        msg.send "#$%#$ #{data}"
+                        #msg.send "#$%#$ #{data}"
+                        #msg.send "--------I am in data---------"
+                        
+                    res1.on 'end', () ->
+                        #msg.send "#$%#$ #{data}"
+                        msg.send "--------I am in data---------"
+                        return
                     try
                         #try detailed v2 api
-                        #json = JSON.parse(body1)
-                        msg.send "#{body} #{data}"
+                        json = JSON.parse(body1)
+                        msg.send "#{json.queryresult.pods[1].subpods[0].plaintext}"
                     catch error
                         msg.send "#{error} (I got nothing)"
         catch error
